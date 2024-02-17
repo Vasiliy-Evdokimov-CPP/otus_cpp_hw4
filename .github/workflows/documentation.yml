@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
-    workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,6 +12,3 @@ jobs:
       - uses: DenverCoder1/doxygen-github-pages-action@v1.3.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          folder: docs/html
-          config_file: Doxyfile
