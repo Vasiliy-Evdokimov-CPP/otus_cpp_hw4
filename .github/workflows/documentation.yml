@@ -1,29 +1,14 @@
-name: Documentation
+name: Doxygen GitHub Pages Deploy Action
 
 on:
   push:
-    branches: 
+    branches:
       - main
-      - feature/github_actions
-jobs:
-  build-documentation:
-    runs-on: ubuntu-latest
 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Doxygen Action
-      uses: mattnotmitt/doxygen-action@v1.1.0
-      with:
-          doxyfile-path: ./Doxyfile
-          working-directory: .
-    
-    - name: GH Pages Deployment
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./doc/html/
-        enable_jekyll: false
-        allow_empty_commit: false
-        force_orphan: true
-        publish_branch: gh-pages
+      - uses: DenverCoder1/doxygen-github-pages-action@v1.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
