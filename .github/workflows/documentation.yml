@@ -1,31 +1,55 @@
-name: 'create documentation'
+name: 'Doxygen GitHub Pages Deploy Action'
+author: 'Jonah Lawrence'
+description: 'Make docs with Doxygen then deploy the generated HTML to GitHub pages'
+branding:
+  icon: "upload-cloud"
+  color: "purple"
 
-on:
-  push:
-    branches: 
-      - main
+inputs:
+  github_token:
+    description: 'A GitHub token for pushing to the repo. Example: https://git.io/passing-token'
+    required: true
+    default: ${{ secrets.GITHUB_TOKEN }}
+  branch:
+    description: 'Branch name for pushing GitHub pages files'
+    required: true
+    default: "gh-pages"
+  folder:
+    description: 'Folder where Doxygen will generate the HTML build files'
+    required: true
+    default: "docs/html"
+  config_file:
+    description: 'Path of the Doxygen configuration file'
+    required: true
+    default: "Doxyfile"
+  target_folder:
+    description: 'Directory on the deployment branch for pushing the build files'
+    required: false
 
-jobs:
-  build-documentation:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    
-    # Build the HTML documentation
-    - name: Doxygen Action
-      uses: mattnotmitt/doxygen-action@v1.1.0
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
       with:
-          doxyfile-path: ./Doxyfile
-          working-directory: .
-    
-    # Deploy the HTML documentation to GitHub Pages
-    - name: GH Pages Deployment
-      uses: peaceiris/actions-gh-pages@v3
+        submodules: "true"
+
+    - name: Install Doxygen
+      run: sudo apt-get install doxygen graphviz -y
+      shell: bash
+
+    - name: Generate Doxygen Documentation
+      run: doxygen ${{ inputs.config_file }}
+      shell: bash
+      
+    - name: Create .nojekyll (ensures pages with underscores work on gh pages)
+      run: touch ${{ inputs.folder }}/.nojekyll
+      shell: bash
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/html/
-        enable_jekyll: false
-        allow_empty_commit: false
-        force_orphan: true
-        publish_branch: gh-pages
+        token: ${{ inputs.github_token }}
+        branch: ${{ inputs.branch }}
+        folder: ${{ inputs.folder }}
+        target-folder: ${{ inputs.target_folder }}
